@@ -1,0 +1,47 @@
+services:
+  spark-master:
+    build: .
+    hostname: spark-master
+    ports:
+      - "7077:7077"    # Spark master port
+      - "8080:8080"    # Spark master web UI
+      - "15002:15002"  # Spark Connect server port
+      - "4040:4040"    # Spark Connect web UI
+    command: >
+      bash -c "/opt/spark/sbin/start-master.sh;
+               /opt/spark/sbin/start-connect-server.sh;
+               sleep infinity"
+    networks:
+      - spark-network
+
+  spark-worker-1:
+    build: .
+    hostname: spark-worker-1
+    ports:
+      - "8081:8081"    # Spark worker web UI
+    depends_on:
+      - spark-master
+    command: >
+      bash -c "sleep 10;
+               /opt/spark/sbin/start-worker.sh spark://spark-master:7077;
+               sleep infinity"
+    networks:
+      - spark-network
+
+  spark-worker-2:
+    build: .
+    hostname: spark-worker-2
+    ports:
+      - "8082:8081"    # Spark worker web UI (mapped to different host port)
+    depends_on:
+      - spark-master
+    command: >
+      bash -c "sleep 10;
+               /opt/spark/sbin/start-worker.sh spark://spark-master:7077;
+               sleep infinity"
+    networks:
+      - spark-network
+
+networks:
+  spark-network:
+    driver: bridge
