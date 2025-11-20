@@ -1,0 +1,10 @@
+[project]
+name = "taxi-prices"
+version = "1.0.0-dev"
+description = "Big data project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "jupyter>=1.1.1",
+  "pyspark-client==4.0.1"
+]
