@@ -1,4 +1,6 @@
-data/
+temp.*
+temp/*
+temp/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
