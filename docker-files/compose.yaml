@@ -6,66 +6,54 @@ services:
       - "7077:7077"    # Spark master port
       - "8080:8080"    # Spark master web UI
       - "4040:4040"    # Spark application web UI
+      - "8888:8888"    # Jupyter notebook
     volumes:
-      - ../src:/opt/spark/notebooks
-      - ../data:/opt/spark/data
+      - ./data/worker1:/opt/spark/data/worker1
+      - ./data/worker2:/opt/spark/data/worker2
+      # - worker1-data:/opt/spark/data/worker1  # Master can access worker1's data
+      # - worker2-data:/opt/spark/data/worker2  # Master can access worker2's data
     command: >
-      bash -c "curl -o /opt/spark/data/yellow_tripdata_2025-01.parquet https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-01.parquet --create-dirs;
-               /opt/spark/sbin/start-master.sh;
+      bash -c "/opt/spark/sbin/start-master.sh;
                sleep infinity"
     networks:
       - spark-network
+
   spark-worker-1:
     build: .
     hostname: spark-worker-1
     ports:
       - "8081:8081"    # Spark worker web UI
     volumes:
-      - ../data:/opt/spark/data
+      - ./data/worker1:/opt/spark/data/worker1  # Only worker1's data
     depends_on:
       - spark-master
     command: >
-      bash -c "curl -o /opt/spark/data/yellow_tripdata_2025-02.parquet https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-02.parquet --create-dirs;
-               sleep 10;
+      bash -c "sleep 10;
                /opt/spark/sbin/start-worker.sh spark://spark-master:7077;
                sleep infinity"
     networks:
-      - spark-network  
+      - spark-network
+
   spark-worker-2:
     build: .
     hostname: spark-worker-2
     ports:
       - "8082:8081"    # Spark worker web UI (mapped to different host port)
     volumes:
-      - ../data:/opt/spark/data
+      - ./data/worker2:/opt/spark/data/worker2  # Only worker2's data
     depends_on:
       - spark-master
     command: >
-      bash -c "curl -o /opt/spark/data/yellow_tripdata_2025-03.parquet https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-03.parquet --create-dirs;
-               sleep 10;
+      bash -c "sleep 10;
                /opt/spark/sbin/start-worker.sh spark://spark-master:7077;
                sleep infinity"
     networks:
       - spark-network
 
-  jupyter:
-    build: .
-    hostname: jupyter
-    ports:
-      - "8888:8888"    # Jupyter notebook port
-    volumes:
-      - ../src:/opt/spark/notebooks
-      - ../data:/opt/spark/data
-    depends_on:
-      - spark-master
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
-      - SPARK_MASTER=spark://spark-master:7077
-    command: >
-      bash -c "sleep 15;
-               jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --notebook-dir=/opt/spark/notebooks --NotebookApp.token='' --NotebookApp.password=''"
-    networks:
-      - spark-network
+volumes:
+  master-data:
+  worker1-data:
+  worker2-data:
 
 networks:
   spark-network:
