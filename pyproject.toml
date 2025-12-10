@@ -1,5 +1,5 @@
 [project]
-name = "taxi-prices"
+name = "purchase-intent"
 version = "1.0.0-dev"
 description = "Big data project"
 readme = "README.md"
