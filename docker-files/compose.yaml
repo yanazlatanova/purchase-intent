@@ -13,7 +13,7 @@ services:
     command: >
       bash -c "/opt/spark/sbin/start-master.sh;
       sleep 5;
-      /opt/spark/sbin/start-connect-server.sh;
+      /opt/spark/sbin/start-connect-server.sh --master spark://spark-master:7077;
                sleep infinity"
     networks:
       - spark-network
