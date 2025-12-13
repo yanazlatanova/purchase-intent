@@ -10,6 +10,7 @@ services:
     volumes:
       - ./../data/worker1:/opt/spark/data/worker1
       - ./../data/worker2:/opt/spark/data/worker2
+      - ./../src/part2/:/opt/spark/work-dir/
     command: >
       bash -c "/opt/spark/sbin/start-master.sh;
       sleep 5;
@@ -20,9 +21,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 500M
-          cpus: '0.5'
-    
+          memory: 500M    
 
   spark-worker-1:
     build: .
@@ -30,8 +29,9 @@ services:
     ports:
       - "8081:8081"    # Spark worker web UI
     volumes:
-      - ./purchase-intent/src/data/worker1:/opt/spark/data/worker1
-      - ./purchase-intent/src/data/worker2:/opt/spark/data/worker2
+      - ./../data/worker1:/opt/spark/data/worker1
+      - ./../data/worker2:/opt/spark/data/worker2
+      - ./../src/part2/:/opt/spark/work-dir/
     depends_on:
       - spark-master
     command: >
@@ -52,8 +52,9 @@ services:
     ports:
       - "8082:8081"    # Spark worker web UI (mapped to different host port)
     volumes:
-      - ./purchase-intent/src/data/worker1:/opt/spark/data/worker1
-      - ./purchase-intent/src/data/worker2:/opt/spark/data/worker2
+      - ./../data/worker1:/opt/spark/data/worker1
+      - ./../data/worker2:/opt/spark/data/worker2
+      - ./../src/part2/:/opt/spark/work-dir/
     depends_on:
       - spark-master
     command: >
