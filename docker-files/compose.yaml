@@ -13,8 +13,8 @@ services:
     command: >
       bash -c "/opt/spark/sbin/start-master.sh;
       sleep 5;
-      /opt/spark/sbin/start-connect-server.sh --master spark://spark-master:7077;
-               sleep infinity"
+      /opt/spark/sbin/start-connect-server.sh --master spark://spark-master:7077 --conf spark.submit.deployMode=client;
+      sleep infinity"
     networks:
       - spark-network
     deploy:
@@ -30,7 +30,8 @@ services:
     ports:
       - "8081:8081"    # Spark worker web UI
     volumes:
-      - ./data/worker1:/opt/spark/data/worker1  # Only worker1's data
+      - ./data/worker1:/opt/spark/data/worker1
+      - ./data/worker2:/opt/spark/data/worker2
     depends_on:
       - spark-master
     command: >
@@ -51,7 +52,8 @@ services:
     ports:
       - "8082:8081"    # Spark worker web UI (mapped to different host port)
     volumes:
-      - ./data/worker2:/opt/spark/data/worker2  # Only worker2's data
+      - ./data/worker1:/opt/spark/data/worker1
+      - ./data/worker2:/opt/spark/data/worker2
     depends_on:
       - spark-master
     command: >
