@@ -3,21 +3,26 @@ services:
     build: .
     hostname: spark-master
     ports:
-      - "7077:7077"    # Spark master port
-      - "8080:8080"    # Spark master web UI
-      - "4040:4040"    # Spark application web UI
-      - "8888:8888"    # Jupyter notebook
+      - "7077:7077"      # Spark master port
+      - "8080:8080"      # Spark master web UI
+      - "4040:4040"      # Spark application web UI
       - "15002:15002"    # Spark Connect port
     volumes:
       - ./data/worker1:/opt/spark/data/worker1
       - ./data/worker2:/opt/spark/data/worker2
-      # - worker1-data:/opt/spark/data/worker1  # Master can access worker1's data
-      # - worker2-data:/opt/spark/data/worker2  # Master can access worker2's data
     command: >
-      bash -c "/opt/spark/sbin/start-connect-server.sh;
+      bash -c "/opt/spark/sbin/start-master.sh;
+      sleep 5;
+      /opt/spark/sbin/start-connect-server.sh;
                sleep infinity"
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+          cpus: '0.5'
+    
 
   spark-worker-1:
     build: .
@@ -34,6 +39,11 @@ services:
                sleep infinity"
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+          cpus: '1'
 
   spark-worker-2:
     build: .
@@ -50,6 +60,11 @@ services:
                sleep infinity"
     networks:
       - spark-network
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+          cpus: '1'
 
 volumes:
   master-data:
