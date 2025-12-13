@@ -33,8 +33,8 @@ output_dir = Path(__file__).resolve().parents[1] / 'data'
 output_dir.mkdir(parents=True, exist_ok=True)
 
 # Save to CSVs
-part1.to_csv(output_dir / 'online_shoppers_part1.csv', index=False)
-part2.to_csv(output_dir / 'online_shoppers_part2.csv', index=False)
+part1.to_csv(output_dir / 'worker1' / 'online_shoppers_part1.csv', index=False)
+part2.to_csv(output_dir / 'worker2' / 'online_shoppers_part2.csv', index=False)
 
-print(f"Saved {len(part1)} rows to {output_dir / 'online_shoppers_part1.csv'}")
-print(f"Saved {len(part2)} rows to {output_dir / 'online_shoppers_part2.csv'}")
+print(f"Saved {len(part1)} rows to {output_dir / 'worker1' / 'online_shoppers_part1.csv'}")
+print(f"Saved {len(part2)} rows to {output_dir / 'worker2' / 'online_shoppers_part2.csv'}")
