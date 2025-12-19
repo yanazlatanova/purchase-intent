@@ -1,0 +1,92 @@
+services:
+  spark-master:
+    build: .
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+      - "4040:4040"
+    volumes:
+      - ./scripts:/opt/spark/work-dir
+      - ./data:/opt/spark/data
+      - ./checkpoints:/opt/spark/checkpoints
+      - ./output:/opt/spark/output
+      - ./models:/opt/spark/models
+    environment:
+      - SPARK_MODE=master
+      - SPARK_LOCAL_IP=spark-master
+      - SPARK_DRIVER_MEMORY=2g
+      - SPARK_DRIVER_CORES=2
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "0.0.0.0", "--port", "7077", "--webui-port", "8080"]
+    networks:
+      - spark-network
+
+  spark-worker:
+    build: .
+    container_name: spark-worker
+    hostname: spark-worker
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./scripts:/opt/spark/work-dir
+      - ./data:/opt/spark/data
+      - ./checkpoints:/opt/spark/checkpoints
+      - ./output:/opt/spark/output
+      - ./models:/opt/spark/models
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2g
+      - SPARK_WORKER_CORES=2
+      - SPARK_LOCAL_IP=spark-worker
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    networks:
+      - spark-network
+
+  spark-app:
+    build: .
+    container_name: spark-app
+    hostname: spark-app
+    depends_on:
+      - spark-master
+      - spark-worker
+    volumes:
+      - ./scripts:/opt/spark/work-dir
+      - ./data:/opt/spark/data
+      - ./checkpoints:/opt/spark/checkpoints
+      - ./output:/opt/spark/output
+      - ./models:/opt/spark/models
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_EXECUTOR_MEMORY=2g
+      - SPARK_EXECUTOR_CORES=2
+      - PYTHONUNBUFFERED=1
+    working_dir: /opt/spark/work-dir
+    command: tail -f /dev/null
+    networks:
+      - spark-network
+
+  # Real-time Data Stream Simulator
+  stream-simulator:
+    build: .
+    container_name: stream-simulator
+    hostname: stream-simulator
+    ports:
+      - "9999:9999"
+    volumes:
+      - ./scripts:/opt/spark/work-dir
+      - ./data:/opt/spark/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    working_dir: /opt/spark/work-dir
+    # Simulator runs in background - can start manually via docker exec
+    command: tail -f /dev/null
+    networks:
+      - spark-network
+
+networks:
+  spark-network:
+    driver: bridge
